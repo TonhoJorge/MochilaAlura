@@ -16,7 +16,7 @@ form.addEventListener("submit", (evento) => {
 
     const itemAtual = {
         "nome": nome.value, 
-        "quantidade": quantidade.value,
+        "quantidade": quantidade.value
     }
 
     if (existe) {
@@ -24,13 +24,20 @@ form.addEventListener("submit", (evento) => {
 
         atualizaElemento(itemAtual)
 
-        itens[existe.id] = itemAtual
+        itens[itens.findIndex(elemento => elemento.id === existe.id)] = itemAtual
     } else {
-        itemAtual.id = itens.length
-
-        criaElemento(itemAtual)
-
-        itens.push(itemAtual)
+        itemAtual.id = itens[itens.length -1] ? (itens[itens.length-1]).id + 1 : 0;
+        
+        if (itemAtual.quantidade > 0 || itemAtual.quantidade === 0) {
+            criaElemento(itemAtual)
+        
+            itens.push(itemAtual)
+        } else {
+            
+            Alert.render('Número de itens inválido')
+            console.log("Algo de errado não está certo")
+                        
+        }
     }
 
     localStorage.setItem("itens",JSON.stringify(itens))
@@ -50,9 +57,53 @@ function criaElemento(item) {
 
     novoItem.innerHTML += item.nome
 
+    novoItem.appendChild(botaoDeleta(item.id))
+
     lista.appendChild(novoItem)
 }
 
 function atualizaElemento(item) {
     document.querySelector("[data-id='"+item.id+"']").innerHTML = item.quantidade
 }
+
+function botaoDeleta (id) {
+    const elementoBotao = document.createElement("button")
+    elementoBotao.innerText = "X"
+
+    elementoBotao.addEventListener("click", function () {
+        deletaElemento(this.parentNode, id)
+    })
+
+    return elementoBotao
+}
+
+function deletaElemento (tag, id) {
+    tag.remove()
+
+    
+    itens.splice(itens.findIndex (elemento => elemento.id === id), 1)
+
+    localStorage.setItem("itens",JSON.stringify(itens))
+}
+
+function CustomAlert(){
+    this.render = function(dialog){
+        var winW = window.innerWidth;
+        var winH = window.innerHeight;
+        var dialogoverlay = document.getElementById('dialogoverlay');
+        var dialogbox = document.getElementById('dialogbox');
+        dialogoverlay.style.display = "block";
+        dialogoverlay.style.height = winH+"px";
+        dialogbox.style.left = (winW/2) - (550 * .5)+"px";
+        dialogbox.style.top = "100px";
+        dialogbox.style.display = "block";
+        document.getElementById('dialogboxhead').innerHTML = "Erro";
+        document.getElementById('dialogboxbody').innerHTML = dialog;
+        document.getElementById('dialogboxfoot').innerHTML = '<button onclick="Alert.ok()">OK</button>';
+    }
+    this.ok = function(){
+        document.getElementById('dialogbox').style.display = "none";
+        document.getElementById('dialogoverlay').style.display = "none";
+    }
+}
+var Alert = new CustomAlert();
